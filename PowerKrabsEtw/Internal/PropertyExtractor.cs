@@ -1,7 +1,7 @@
 ﻿using O365.Security.ETW;
 using System.Management.Automation;
 
-namespace PowerKrabs
+namespace PowerKrabsEtw.Internal
 {
     internal class PropertyExtractor
     {

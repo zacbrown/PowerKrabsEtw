@@ -2,7 +2,7 @@
 using System;
 using System.Management.Automation;
 
-namespace PowerKrabs
+namespace PowerKrabsEtw.Internal
 {
     internal static class PSObjectExtensions
     {

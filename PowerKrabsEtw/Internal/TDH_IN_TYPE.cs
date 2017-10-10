@@ -1,4 +1,4 @@
-﻿namespace PowerKrabs
+﻿namespace PowerKrabsEtw.Internal
 {
     internal enum TDH_IN_TYPE
     {

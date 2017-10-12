@@ -43,14 +43,14 @@ namespace PowerKrabsEtw
             else
             {
                 var ex = new ArgumentException($"Please provide a valid -{nameof(ProviderName)} or -{nameof(ProviderGuid)}");
-                var errorRecord = new ErrorRecord(ex, nameof(ArgumentException), ErrorCategory.InvalidArgument, null);
+                var errorRecord = new ErrorRecord(ex, nameof(PSArgumentException), ErrorCategory.InvalidArgument, null);
                 WriteObject(errorRecord);
                 return;
             }
 
             provider.All = AllFlags;
             provider.Any = AnyFlags;
-            WriteObject(provider);
+            WriteObject(new PSEtwUserProvider(provider));
         }
 
         private bool CheckIfInvalidApartmentState()

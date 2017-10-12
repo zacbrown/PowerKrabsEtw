@@ -11,23 +11,27 @@ namespace PowerKrabsEtw.Internal
     /// Providers on a UserTrace object. You can't enable
     /// providers once the UserTrace is started.
     /// </summary>
-    public class UserTraceManager : IDisposable
+    public class PSEtwUserTrace : IDisposable
     {
         readonly object _sync = new object();
         readonly UserTrace _trace;
         readonly CancellationTokenSource _cts;
+        readonly PropertyExtractor _propertyExtractor = new PropertyExtractor();
+        readonly IEventRecordDelegate _recordHandler;
         Task _task;
 
         bool _isRunning;
 
-        internal UserTraceManager(string traceName)
+        internal PSEtwUserTrace(IEventRecordDelegate handler, string traceName)
         {
             _trace = new UserTrace(traceName);
             _cts = new CancellationTokenSource();
+            _recordHandler = handler;
             ResetTask();
         }
 
-        internal UserTraceManager() : this($"PowerKrabsEtw {Guid.NewGuid().ToString()}")
+        internal PSEtwUserTrace(IEventRecordDelegate handler)
+            : this(handler, $"PowerKrabsEtw {Guid.NewGuid().ToString()}")
         {
         }
 
@@ -48,13 +52,14 @@ namespace PowerKrabsEtw.Internal
             }
         }
 
-        public void EnableProvider(Provider provider)
+        internal void EnableProvider(PSEtwUserProvider provider)
         {
             lock (_sync)
             {
                 if (!_isRunning)
                 {
-                    _trace.Enable(provider);
+                    provider.EnsureDefaultHandlerSetup(DefaultEventRecordHandler);
+                    _trace.Enable(provider.Provider);
                 }
                 else
                 {
@@ -63,7 +68,7 @@ namespace PowerKrabsEtw.Internal
             }
         }
 
-        public void Start()
+        internal void Start()
         {
             lock (_sync)
             {
@@ -72,7 +77,7 @@ namespace PowerKrabsEtw.Internal
             }
         }
 
-        public void Stop()
+        internal void Stop()
         {
             lock (_sync)
             {
@@ -81,6 +86,12 @@ namespace PowerKrabsEtw.Internal
                 ResetTask();
                 _isRunning = false;
             }
+        }
+
+        internal void DefaultEventRecordHandler(IEventRecord record)
+        {
+            var obj = _propertyExtractor.Extract(record);
+            
         }
 
         public bool IsRunning => _isRunning;

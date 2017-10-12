@@ -33,8 +33,9 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="O365.Security.Native.ETW, Version=1.0.6347.22953, Culture=neutral, PublicKeyToken=bc3a2e4ba4c5fbd5, processorArchitecture=AMD64">
+    <Reference Include="O365.Security.Native.ETW, Version=1.0.6493.34111, Culture=neutral, processorArchitecture=AMD64">
       <HintPath>..\packages\O365.Security.Native.ETW.Debug.1.0.8\lib\net45\O365.Security.Native.ETW.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -47,15 +48,21 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Internal\PSEtwFilter.cs" />
+    <Compile Include="Internal\PSEtwUserProvider.cs" />
+    <Compile Include="SetEtwCallbackFilter.cs" />
     <Compile Include="Internal\DisposableExtensions.cs" />
     <Compile Include="Internal\Exceptions.cs" />
-    <Compile Include="Internal\UserTraceManager.cs" />
+    <Compile Include="Internal\PSEtwUserTrace.cs" />
     <Compile Include="Internal\PSObjectExtensions.cs" />
     <Compile Include="Internal\TDH_IN_TYPE.cs" />
+    <Compile Include="NewEtwCallbackFilter.cs" />
     <Compile Include="NewEtwUserProvider.cs" />
     <Compile Include="NewEtwUserTrace.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Internal\PropertyExtractor.cs" />
+    <Compile Include="SetEtwUserProvider.cs" />
+    <Compile Include="StartEtwUserTrace.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

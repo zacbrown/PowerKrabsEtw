@@ -5,7 +5,7 @@ namespace PowerKrabsEtw
     using Internal;
 
     [Cmdlet(VerbsCommon.Set, "EtwUserProvider")]
-    public class SetEtwUserProvider : Cmdlet
+    public class SetEtwUserProvider : PSCmdlet
     {
         [Parameter(Position = 0, Mandatory = true)]
         public PSEtwUserTrace Trace { get; set; }

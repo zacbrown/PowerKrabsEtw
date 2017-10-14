@@ -1,6 +1,7 @@
 ﻿using O365.Security.ETW;
 
 using System;
+using System.Management.Automation;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -13,25 +14,23 @@ namespace PowerKrabsEtw.Internal
     /// </summary>
     public class PSEtwUserTrace : IDisposable
     {
+        public delegate void PSEventRecordCallback(PSObject obj);
+
         readonly object _sync = new object();
         readonly UserTrace _trace;
         readonly CancellationTokenSource _cts;
         readonly PropertyExtractor _propertyExtractor = new PropertyExtractor();
-        readonly IEventRecordDelegate _recordHandler;
-        Task _task;
-
+        PSEventRecordCallback _callback;
         bool _isRunning;
 
-        internal PSEtwUserTrace(IEventRecordDelegate handler, string traceName)
+        internal PSEtwUserTrace(string traceName)
         {
             _trace = new UserTrace(traceName);
             _cts = new CancellationTokenSource();
-            _recordHandler = handler;
-            ResetTask();
         }
 
-        internal PSEtwUserTrace(IEventRecordDelegate handler)
-            : this(handler, $"PowerKrabsEtw {Guid.NewGuid().ToString()}")
+        internal PSEtwUserTrace()
+            : this($"PowerKrabsEtw {Guid.NewGuid().ToString()}")
         {
         }
 
@@ -68,12 +67,13 @@ namespace PowerKrabsEtw.Internal
             }
         }
 
-        internal void Start()
+        internal void Start(PSEventRecordCallback callback)
         {
             lock (_sync)
             {
-                _task.Start();
+                _callback = callback;
                 _isRunning = true;
+                _trace.Start();
             }
         }
 
@@ -81,9 +81,9 @@ namespace PowerKrabsEtw.Internal
         {
             lock (_sync)
             {
+                if (!_isRunning) return;
+
                 _trace.Stop();
-                _task.Wait(TimeSpan.FromSeconds(2));
-                ResetTask();
                 _isRunning = false;
             }
         }
@@ -91,14 +91,9 @@ namespace PowerKrabsEtw.Internal
         internal void DefaultEventRecordHandler(IEventRecord record)
         {
             var obj = _propertyExtractor.Extract(record);
-            
+            _callback.Invoke(obj);
         }
 
         public bool IsRunning => _isRunning;
-
-        private void ResetTask()
-        {
-            _task = new Task(() => { _trace.Start(); }, _cts.Token, TaskCreationOptions.LongRunning);
-        }
     }
 }

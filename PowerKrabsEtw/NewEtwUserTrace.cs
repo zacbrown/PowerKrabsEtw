@@ -15,14 +15,8 @@ namespace PowerKrabsEtw
 
         protected override void ProcessRecord()
         {
-            var traceMan = new PSEtwUserTrace(PSEventRecordDelegate, Name);
+            var traceMan = new PSEtwUserTrace(Name);
             WriteObject(traceMan);
-        }
-
-        private PropertyExtractor _extractor = new PropertyExtractor();
-        private void PSEventRecordDelegate(IEventRecord evt)
-        {
-            WriteObject(_extractor.Extract(evt));
         }
     }
 }

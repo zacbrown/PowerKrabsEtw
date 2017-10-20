@@ -22,11 +22,13 @@ namespace PowerKrabsEtw.Internal
         readonly PropertyExtractor _propertyExtractor = new PropertyExtractor();
         PSEventRecordCallback _callback;
         bool _isRunning;
+        Task _task;
 
         internal PSEtwUserTrace(string traceName)
         {
             _trace = new UserTrace(traceName);
             _cts = new CancellationTokenSource();
+            Reset();
         }
 
         internal PSEtwUserTrace()
@@ -71,9 +73,11 @@ namespace PowerKrabsEtw.Internal
         {
             lock (_sync)
             {
+                if (_isRunning) return;
+
                 _callback = callback;
                 _isRunning = true;
-                _trace.Start();
+                _task.Start();
             }
         }
 
@@ -84,8 +88,14 @@ namespace PowerKrabsEtw.Internal
                 if (!_isRunning) return;
 
                 _trace.Stop();
+                Reset();
                 _isRunning = false;
             }
+        }
+
+        internal void Reset()
+        {
+            _task = new Task(() => { _trace.Start(); }, _cts.Token, TaskCreationOptions.LongRunning);
         }
 
         internal void DefaultEventRecordHandler(IEventRecord record)

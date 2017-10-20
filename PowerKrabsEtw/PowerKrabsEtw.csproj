@@ -48,6 +48,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Internal\Details\IPropertyParser.cs" />
+    <Compile Include="Internal\Details\MicrosoftWindowsPowerShellParser.cs" />
+    <Compile Include="Internal\Details\ProviderDictionary.cs" />
+    <Compile Include="Internal\Details\StringExtensions.cs" />
     <Compile Include="Internal\PSEtwFilter.cs" />
     <Compile Include="Internal\PSEtwUserProvider.cs" />
     <Compile Include="SetEtwCallbackFilter.cs" />

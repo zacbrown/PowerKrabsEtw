@@ -39,6 +39,8 @@ namespace PowerKrabsEtw.Internal
                 obj.Properties.Add(new PSNoteProperty("EventName", record.Name));
                 obj.Properties.Add(new PSNoteProperty(nameof(record.ProviderName), record.ProviderName));
                 obj.Properties.Add(new PSNoteProperty(nameof(record.ProviderId), record.ProviderId));
+                obj.Properties.Add(new PSNoteProperty(nameof(record.Version), record.Version));
+                obj.Properties.Add(new PSNoteProperty(nameof(record.Level), record.Level));
             }
 
             foreach (var p in record.Properties)

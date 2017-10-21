@@ -11,27 +11,28 @@ namespace PowerKrabsEtw
         [Parameter(Mandatory = true)]
         public PSEtwUserTrace Trace { get; set; }
 
-        readonly List<PSObject> records = new List<PSObject>();
+        readonly object _lock = new object();
+        readonly List<PSObject> _records = new List<PSObject>();
 
         protected override void BeginProcessing()
         {
             try
             {
                 while (Host.UI.RawUI.KeyAvailable) Host.UI.RawUI.ReadKey();
+                Trace.Start((obj) =>
+                {
+                    lock (_lock) { _records.Add(obj); }
+                });
+
                 while (!Stopping)
                 {
-                    Trace.Start((obj) =>
+                    lock (_lock)
                     {
-                        records.Add(obj);
-                    });
-
-                    lock (records)
-                    {
-                        foreach (var r in records)
+                        foreach (var r in _records)
                         {
                             WriteObject(r);
                         }
-                        records.Clear();
+                        _records.Clear();
                     }
 
                     Thread.Sleep(100);

@@ -19,6 +19,10 @@ namespace PowerKrabsEtw.Internal.Details
             }
         }
 
+        public bool Contains(string name) => _providerNameDictionary.ContainsKey(name);
+
+        public bool Contains(Guid guid) => _providerGuidDictionary.ContainsKey(guid);
+
         public IPropertyParser GetByProviderName(string key)
         {
             lock (_lock) return _providerGuidDictionary[_providerNameDictionary[key]];

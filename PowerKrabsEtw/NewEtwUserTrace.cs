@@ -14,7 +14,12 @@ namespace PowerKrabsEtw
         public string Name { get; set; } = Guid.NewGuid().ToString();
 
         [Parameter(Position = 1)]
-        public bool IncludeVerboseProperties { get; set; } = false;
+        public SwitchParameter IncludeVerboseProperties
+        {
+            get { return _includeVerboseProperties; }
+            set { _includeVerboseProperties = value; }
+        }
+        private bool _includeVerboseProperties;
 
         protected override void ProcessRecord()
         {

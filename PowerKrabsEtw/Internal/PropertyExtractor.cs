@@ -17,6 +17,11 @@ namespace PowerKrabsEtw.Internal
                 "Microsoft-Windows-PowerShell",
                 Guid.Parse("A0C1853B-5C40-4B15-8766-3CF1C58F985A"),
                 new MicrosoftWindowsPowerShellParser());
+
+            providerDictionary.AddValue(
+                "Microsoft-Windows-Kernel-Network",
+                Guid.Parse("7dd42a49-5329-4832-8dfd-43d979153a88"),
+                new MicrosoftWindowsKernelNetworkParser());
         }
 
         internal PropertyExtractor(bool includeVerboseProperties)
@@ -26,7 +31,6 @@ namespace PowerKrabsEtw.Internal
 
         internal PSObject Extract(IEventRecord record)
         {
-            var parser = providerDictionary.GetByProviderGuid(record.ProviderId);
             var obj = new PSObject();
 
             obj.Properties.Add(new PSNoteProperty("EventId", record.Id));
@@ -43,10 +47,17 @@ namespace PowerKrabsEtw.Internal
                 obj.Properties.Add(new PSNoteProperty(nameof(record.Level), record.Level));
             }
 
+            IPropertyParser parser = null;
+
+            if (providerDictionary.Contains(record.ProviderId))
+            {
+                parser = providerDictionary.GetByProviderGuid(record.ProviderId);
+            }
+
             foreach (var p in record.Properties)
             {
-                var parsed = parser.ParseProperty(p.Name, record);
-                if (parsed.Any())
+                var parsed = parser?.ParseProperty(p.Name, record);
+                if (parsed != null && parsed.Any())
                 {
                     foreach (var parsedProp in parsed)
                     {
@@ -58,6 +69,7 @@ namespace PowerKrabsEtw.Internal
                     obj.Properties.Add(new PSNoteProperty(p.Name, ParseBasicProperty(p, record)));
                 }
             }
+
 
             return obj;
         }
@@ -113,6 +125,14 @@ namespace PowerKrabsEtw.Internal
 
                 case (int)TDH_IN_TYPE.TDH_INTYPE_UNICODESTRING:
                     propertyValue = record.GetUnicodeString(prop.Name);
+                    break;
+
+                case (int)TDH_IN_TYPE.TDH_INTYPE_FILETIME:
+                    propertyValue = record.GetDateTime(prop.Name);
+                    break;
+
+                default:
+                    propertyValue = "<Unknown type>";
                     break;
             }
 

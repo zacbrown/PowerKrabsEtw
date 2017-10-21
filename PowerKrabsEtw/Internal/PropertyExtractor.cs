@@ -8,6 +8,7 @@ namespace PowerKrabsEtw.Internal
 {
     internal class PropertyExtractor
     {
+        readonly bool _includeVerboseProperties;
         static ProviderDictionary providerDictionary = new ProviderDictionary();
 
         static PropertyExtractor()
@@ -18,14 +19,31 @@ namespace PowerKrabsEtw.Internal
                 new MicrosoftWindowsPowerShellParser());
         }
 
+        internal PropertyExtractor(bool includeVerboseProperties)
+        {
+            _includeVerboseProperties = includeVerboseProperties;
+        }
+
         internal PSObject Extract(IEventRecord record)
         {
             var parser = providerDictionary.GetByProviderGuid(record.ProviderId);
             var obj = new PSObject();
 
+            obj.Properties.Add(new PSNoteProperty("EventId", record.Id));
+            obj.Properties.Add(new PSNoteProperty(nameof(record.Timestamp), record.Timestamp));
+            obj.Properties.Add(new PSNoteProperty(nameof(record.ProcessId), record.ProcessId));
+            obj.Properties.Add(new PSNoteProperty(nameof(record.ThreadId), record.ThreadId));
+
+            if (_includeVerboseProperties)
+            {
+                obj.Properties.Add(new PSNoteProperty("EventName", record.Name));
+                obj.Properties.Add(new PSNoteProperty(nameof(record.ProviderName), record.ProviderName));
+                obj.Properties.Add(new PSNoteProperty(nameof(record.ProviderId), record.ProviderId));
+            }
+
             foreach (var p in record.Properties)
             {
-                var parsed = parser.Parse(p.Name, record);
+                var parsed = parser.ParseProperty(p.Name, record);
                 if (parsed.Any())
                 {
                     foreach (var parsedProp in parsed)
@@ -35,14 +53,14 @@ namespace PowerKrabsEtw.Internal
                 }
                 else
                 {
-                    obj.Properties.Add(new PSNoteProperty(p.Name, ParseBasic(p, record)));
+                    obj.Properties.Add(new PSNoteProperty(p.Name, ParseBasicProperty(p, record)));
                 }
             }
 
             return obj;
         }
 
-        private object ParseBasic(Property prop, IEventRecord record)
+        private object ParseBasicProperty(Property prop, IEventRecord record)
         {
             object propertyValue = null;
             switch (prop.Type)

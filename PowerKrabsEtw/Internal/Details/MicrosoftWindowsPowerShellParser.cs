@@ -11,7 +11,7 @@ namespace PowerKrabsEtw.Internal.Details
             ContextInfo
         }
 
-        public IEnumerable<KeyValuePair<string, object>> Parse(string propertyName, IEventRecord record)
+        public IEnumerable<KeyValuePair<string, object>> ParseProperty(string propertyName, IEventRecord record)
         {
             switch (propertyName)
             {

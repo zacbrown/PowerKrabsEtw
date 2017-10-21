@@ -27,12 +27,11 @@ namespace PowerKrabsEtw
 
                     lock (records)
                     {
-                        for (int ii = 0; ii < records.Count; ii++)
+                        foreach (var r in records)
                         {
-                            var record = records[ii];
-                            WriteObject(record);
-                            records.RemoveAt(ii);
+                            WriteObject(r);
                         }
+                        records.Clear();
                     }
 
                     Thread.Sleep(100);

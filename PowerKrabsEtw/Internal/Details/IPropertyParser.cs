@@ -5,6 +5,6 @@ namespace PowerKrabsEtw.Internal.Details
 {
     internal interface IPropertyParser
     {
-        IEnumerable<KeyValuePair<string, object>> Parse(string propertyName, IEventRecord record);
+        IEnumerable<KeyValuePair<string, object>> ParseProperty(string propertyName, IEventRecord record);
     }
 }

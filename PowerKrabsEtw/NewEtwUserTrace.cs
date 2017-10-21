@@ -10,12 +10,15 @@ namespace PowerKrabsEtw
     [Cmdlet(VerbsCommon.New, "EtwUserTrace")]
     public class NewEtwUserTrace : PSCmdlet
     {
-        [Parameter()]
+        [Parameter(Position = 0)]
         public string Name { get; set; } = Guid.NewGuid().ToString();
+
+        [Parameter(Position = 1)]
+        public bool IncludeVerboseProperties { get; set; } = false;
 
         protected override void ProcessRecord()
         {
-            var traceMan = new PSEtwUserTrace(Name);
+            var traceMan = new PSEtwUserTrace(Name, IncludeVerboseProperties);
             WriteObject(traceMan);
         }
     }

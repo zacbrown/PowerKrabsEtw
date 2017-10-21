@@ -19,20 +19,21 @@ namespace PowerKrabsEtw.Internal
         readonly object _sync = new object();
         readonly UserTrace _trace;
         readonly CancellationTokenSource _cts;
-        readonly PropertyExtractor _propertyExtractor = new PropertyExtractor();
+        readonly PropertyExtractor _propertyExtractor;
         PSEventRecordCallback _callback;
         bool _isRunning;
         Task _task;
 
-        internal PSEtwUserTrace(string traceName)
+        internal PSEtwUserTrace(string traceName, bool includeVerboseEtwProperties)
         {
+            _propertyExtractor = new PropertyExtractor(includeVerboseEtwProperties);
             _trace = new UserTrace(traceName);
             _cts = new CancellationTokenSource();
             Reset();
         }
 
         internal PSEtwUserTrace()
-            : this($"PowerKrabsEtw {Guid.NewGuid().ToString()}")
+            : this($"PowerKrabsEtw {Guid.NewGuid().ToString()}", false)
         {
         }
 

@@ -57,6 +57,7 @@
     <Compile Include="Internal\PSEtwFilter.cs" />
     <Compile Include="Internal\PSEtwUserProvider.cs" />
     <Compile Include="Internal\PSProcessObject.cs" />
+    <Compile Include="ResumeSuspendedProcess.cs" />
     <Compile Include="SetEtwCallbackFilter.cs" />
     <Compile Include="Internal\DisposableExtensions.cs" />
     <Compile Include="Internal\Exceptions.cs" />

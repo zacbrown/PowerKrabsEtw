@@ -1,4 +1,7 @@
-﻿namespace PowerKrabsEtw.Internal
+﻿// Copyright (c) Zac Brown. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+namespace PowerKrabsEtw.Internal
 {
     internal enum TDH_IN_TYPE
     {

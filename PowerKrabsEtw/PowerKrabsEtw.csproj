@@ -53,13 +53,14 @@
     <Compile Include="Internal\Details\MicrosoftWindowsPowerShellParser.cs" />
     <Compile Include="Internal\Details\ProviderDictionary.cs" />
     <Compile Include="Internal\Details\StringExtensions.cs" />
+    <Compile Include="Internal\NativeMethods.cs" />
     <Compile Include="Internal\PSEtwFilter.cs" />
     <Compile Include="Internal\PSEtwUserProvider.cs" />
+    <Compile Include="Internal\PSProcessObject.cs" />
     <Compile Include="SetEtwCallbackFilter.cs" />
     <Compile Include="Internal\DisposableExtensions.cs" />
     <Compile Include="Internal\Exceptions.cs" />
     <Compile Include="Internal\PSEtwUserTrace.cs" />
-    <Compile Include="Internal\PSObjectExtensions.cs" />
     <Compile Include="Internal\TDH_IN_TYPE.cs" />
     <Compile Include="NewEtwCallbackFilter.cs" />
     <Compile Include="NewEtwUserProvider.cs" />
@@ -68,6 +69,7 @@
     <Compile Include="Internal\PropertyExtractor.cs" />
     <Compile Include="SetEtwUserProvider.cs" />
     <Compile Include="StartEtwUserTrace.cs" />
+    <Compile Include="StartProcessSuspended.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

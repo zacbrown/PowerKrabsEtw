@@ -9,10 +9,12 @@ namespace PowerKrabsEtw
     [Cmdlet(VerbsCommon.Set, "EtwCallbackFilter")]
     public class SetEtwCallbackFilter : PSCmdlet
     {
-        [Parameter(Mandatory = true, ParameterSetName = "ByUserProvider")]
+        [Parameter(Mandatory = true, Position = 0)]
+        [ValidateNotNull]
         public PSEtwUserProvider UserProvider { get; set; }
 
-        [Parameter(Mandatory = true)]
+        [Parameter(Mandatory = true, Position = 1)]
+        [ValidateNotNull]
         public PSEtwFilter Filter { get; set; }
 
         protected override void BeginProcessing()

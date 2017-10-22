@@ -12,6 +12,7 @@ namespace PowerKrabsEtw
     public class NewEtwUserProvider : PSCmdlet
     {
         [Parameter(ParameterSetName = "ByProviderName")]
+        [ValidateNotNullOrEmpty]
         public string ProviderName { get; set; }
 
         [Parameter(ParameterSetName = "ByProviderGuid")]

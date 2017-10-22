@@ -9,6 +9,7 @@ namespace PowerKrabsEtw
     public class StartEtwUserTrace : PSCmdlet
     {
         [Parameter(Mandatory = true)]
+        [ValidateNotNull]
         public PSEtwUserTrace Trace { get; set; }
 
         readonly object _lock = new object();

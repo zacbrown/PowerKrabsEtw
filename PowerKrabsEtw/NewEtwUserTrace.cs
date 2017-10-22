@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Management.Automation;
 
-using O365.Security.ETW;
-
 namespace PowerKrabsEtw
 {
     using Internal;
@@ -11,6 +9,7 @@ namespace PowerKrabsEtw
     public class NewEtwUserTrace : PSCmdlet
     {
         [Parameter(Position = 0)]
+        [ValidateNotNullOrEmpty]
         public string Name { get; set; } = Guid.NewGuid().ToString();
 
         [Parameter(Position = 1)]
@@ -21,7 +20,7 @@ namespace PowerKrabsEtw
         }
         private bool _includeVerboseProperties;
 
-        protected override void ProcessRecord()
+        protected override void BeginProcessing()
         {
             var traceMan = new PSEtwUserTrace(Name, IncludeVerboseProperties);
             WriteObject(traceMan);

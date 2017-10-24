@@ -21,7 +21,7 @@ namespace PowerKrabsEtw
         protected override void BeginProcessing()
         {
             string actualProcessPath = ExePath;
-            var threadHandle = NativeMethods.LaunchProcessSuspended(ExePath, CommandLine, out uint pid, out actualProcessPath);
+            var threadHandle = ProcessHelper.LaunchProcessSuspended(ExePath, CommandLine, out uint pid, out actualProcessPath);
 
             if (threadHandle == IntPtr.Zero)
             {

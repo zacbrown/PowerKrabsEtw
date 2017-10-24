@@ -2,6 +2,8 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using O365.Security.ETW;
+using PowerKrabsEtw.Internal.Details;
+using PowerKrabsEtw.Internal.PropertyParser;
 using System;
 using System.Management.Automation;
 using System.Threading;

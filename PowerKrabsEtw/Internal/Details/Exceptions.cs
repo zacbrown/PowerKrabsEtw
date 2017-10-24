@@ -3,7 +3,7 @@
 
 using System;
 
-namespace PowerKrabsEtw.Internal
+namespace PowerKrabsEtw.Internal.Details
 {
     public class TraceAlreadyRunningException : Exception
     {

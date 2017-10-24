@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 
-namespace PowerKrabsEtw.Internal.Details
+namespace PowerKrabsEtw.Internal.PropertyParser
 {
     internal class MicrosoftWindowsKernelNetworkParser : IPropertyParser
     {

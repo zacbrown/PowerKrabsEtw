@@ -1,11 +1,12 @@
 ﻿// Copyright (c) Zac Brown. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using PowerKrabsEtw.Internal.PropertyParser;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace PowerKrabsEtw.Internal.Details
+namespace PowerKrabsEtw.Internal.PropertyParser
 {
     internal class ProviderDictionary
     {

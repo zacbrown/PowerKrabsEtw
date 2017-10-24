@@ -15,7 +15,7 @@ namespace PowerKrabsEtw
 
         protected override void BeginProcessing()
         {
-            NativeMethods.ResumeProcess(ProcessObject.ThreadHandle);
+            ProcessHelper.ResumeProcess(ProcessObject.ThreadHandle);
         }
     }
 }

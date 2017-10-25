@@ -174,6 +174,8 @@ namespace PowerKrabsEtw.Internal.Details
         A = 0x0001,
         CNAME = 0x0005,
         AAAA = 0x001c,
+        MX = 0x000f,
+        TXT = 0x0010,
     }
 
     [StructLayout(LayoutKind.Sequential)]

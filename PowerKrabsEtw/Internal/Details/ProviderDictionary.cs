@@ -6,20 +6,20 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace PowerKrabsEtw.Internal.PropertyParser
+namespace PowerKrabsEtw.Internal.Details
 {
-    internal class ProviderDictionary
+    internal class ProviderDictionary<T>
     {
         readonly object _lock = new object();
         readonly Dictionary<string, Guid> _providerNameDictionary = new Dictionary<string, Guid>();
-        readonly Dictionary<Guid, IPropertyParser> _providerGuidDictionary = new Dictionary<Guid, IPropertyParser>();
+        readonly Dictionary<Guid, T> _providerGuidDictionary = new Dictionary<Guid, T>();
 
-        public void AddValue(string friendly, Guid guid, IPropertyParser parser)
+        public void AddValue(string friendly, Guid guid, T value)
         {
             lock (_lock)
             {
                 _providerNameDictionary[friendly] = guid;
-                _providerGuidDictionary[guid] = parser;
+                _providerGuidDictionary[guid] = value;
             }
         }
 
@@ -27,12 +27,12 @@ namespace PowerKrabsEtw.Internal.PropertyParser
 
         public bool Contains(Guid guid) => _providerGuidDictionary.ContainsKey(guid);
 
-        public IPropertyParser GetByProviderName(string key)
+        public T GetByProviderName(string key)
         {
             lock (_lock) return _providerGuidDictionary[_providerNameDictionary[key]];
         }
 
-        public IPropertyParser GetByProviderGuid(Guid key)
+        public T GetByProviderGuid(Guid key)
         {
             lock (_lock) return _providerGuidDictionary[key];
         }

@@ -49,14 +49,18 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="GetDnsCacheEntries.cs" />
-    <Compile Include="Internal\Details\DnsHelper.cs" />
+    <Compile Include="Internal\Details\DnsCacheHelper.cs" />
+    <Compile Include="Internal\Details\ParsedDnsRecord.cs" />
+    <Compile Include="Internal\Details\ReverseDnsCache.cs" />
     <Compile Include="Internal\Details\Win32Interop.cs" />
     <Compile Include="Internal\PropertyParser\IPropertyParser.cs" />
     <Compile Include="Internal\PropertyParser\MicrosoftWindowsKernelNetworkParser.cs" />
     <Compile Include="Internal\PropertyParser\MicrosoftWindowsPowerShellParser.cs" />
-    <Compile Include="Internal\PropertyParser\ProviderDictionary.cs" />
+    <Compile Include="Internal\Details\ProviderDictionary.cs" />
     <Compile Include="Internal\Details\StringExtensions.cs" />
     <Compile Include="Internal\Details\ProcessHelper.cs" />
+    <Compile Include="Internal\ProviderSpecificHandler\IProviderSpecificHandler.cs" />
+    <Compile Include="Internal\ProviderSpecificHandler\MicrosoftWindowsDNSClientHandler.cs" />
     <Compile Include="Internal\PSEtwFilter.cs" />
     <Compile Include="Internal\PSEtwUserProvider.cs" />
     <Compile Include="Internal\PSProcessObject.cs" />

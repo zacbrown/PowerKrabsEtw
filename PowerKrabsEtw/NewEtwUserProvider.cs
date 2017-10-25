@@ -54,7 +54,7 @@ namespace PowerKrabsEtw
 
             provider.All = AllFlags;
             provider.Any = AnyFlags;
-            WriteObject(new PSEtwUserProvider(provider));
+            WriteObject(new PSEtwUserProvider(provider, ProviderName ?? ProviderGuid));
         }
 
         private bool CheckIfInvalidApartmentState()

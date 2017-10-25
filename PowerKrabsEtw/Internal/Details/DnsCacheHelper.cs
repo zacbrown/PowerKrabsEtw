@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
 using System.Net;
 using System.Runtime.InteropServices;
 
@@ -16,12 +15,12 @@ namespace PowerKrabsEtw.Internal.Details
         internal IPAddress Address { get; set; }
     }
 
-    internal class DnsHelper : IDisposable
+    internal class DnsCacheHelper : IDisposable
     {
         readonly Win32Interop.DnsGetCacheDataTable _dnsGetCacheDataTable;
         readonly IntPtr _dnsapiLibHandle;
 
-        internal DnsHelper()
+        internal DnsCacheHelper()
         {
             _dnsapiLibHandle = Win32Interop.LoadLibrary(@"dnsapi.dll");
             if (_dnsapiLibHandle == IntPtr.Zero) throw new Win32Exception(Marshal.GetLastWin32Error());
@@ -41,74 +40,22 @@ namespace PowerKrabsEtw.Internal.Details
             }
         }
 
-        // BUGBUG: This function is gross. Clean this up.
         internal IEnumerable<ManagedDnsCacheEntry> GetDnsCacheEntries()
-        //internal IEnumerable<string> GetDnsCacheEntries()
         {
             var ret = new List<ManagedDnsCacheEntry>();
+            var ptr = IntPtr.Zero;
+            var table = IntPtr.Zero;
 
-            IntPtr ptr = IntPtr.Zero;
-            IntPtr table = IntPtr.Zero;
             if (_dnsGetCacheDataTable.Invoke(out table))
             {
                 ptr = table;
                 do
                 {
                     var entry = (DnsCacheEntry)Marshal.PtrToStructure(ptr, typeof(DnsCacheEntry));
-                    var asString = Marshal.PtrToStringAuto(entry.pszName);
-                    IntPtr queryResults = IntPtr.Zero;
+                    var domainName = Marshal.PtrToStringAuto(entry.pszName);
 
-                    if (Win32Interop.DnsQuery(ref asString, DnsRecordType.A, (DnsQueryType)0x8010, IntPtr.Zero, ref queryResults, IntPtr.Zero) == 0)
-                    {
-                        var recordIndexPtr = queryResults;
-
-                        do
-                        {
-                            var record = (DnsRecord)Marshal.PtrToStructure(recordIndexPtr, typeof(DnsRecord));
-                            if (record.RecordType == DnsRecordType.A)
-                            {
-                                int size = Marshal.SizeOf(record);
-                                recordIndexPtr += size;
-                                var ipv4 = (DnsARecord)Marshal.PtrToStructure(recordIndexPtr, typeof(DnsARecord));
-
-                                ret.Add(new ManagedDnsCacheEntry { DomainName = asString, Address = new IPAddress(ipv4.IpAddress) });
-                                recordIndexPtr = record.Next;
-                            }
-                            else
-                            {
-                                recordIndexPtr = IntPtr.Zero;
-                            }
-                        } while (recordIndexPtr != IntPtr.Zero);
-
-                        if (queryResults != IntPtr.Zero) Win32Interop.DnsFree(queryResults, DnsFreeType.FreeRecordList);
-                    }
-
-                    if (Win32Interop.DnsQuery(ref asString, DnsRecordType.AAAA, (DnsQueryType)0x8010, IntPtr.Zero, ref queryResults, IntPtr.Zero) == 0)
-                    {
-                        var recordIndexPtr = queryResults;
-
-                        do
-                        {
-                            var record = (DnsRecord)Marshal.PtrToStructure(queryResults, typeof(DnsRecord));
-                            Console.WriteLine($"Domain: {asString} - DnsRecordType: {record.RecordType}");
-                            if (record.RecordType == DnsRecordType.AAAA)
-                            {
-                                int size = Marshal.SizeOf(record);
-                                recordIndexPtr += size;
-                                var ipv6 = (DnsAAAARecord)Marshal.PtrToStructure(recordIndexPtr, typeof(DnsAAAARecord));
-                                var address = GetIPAddressFromDnsAAAARecord(ipv6);
-                                ret.Add(new ManagedDnsCacheEntry { DomainName = asString, Address = address });
-                                recordIndexPtr = record.Next;
-                            }
-                            else
-                            {
-                                recordIndexPtr = IntPtr.Zero;
-                            }
-                        }
-                        while (recordIndexPtr != IntPtr.Zero);
-
-                        if (queryResults != IntPtr.Zero) Win32Interop.DnsFree(queryResults, DnsFreeType.FreeRecordList);
-                    }
+                    ret.AddRange(ExtractDnsARecords(domainName));
+                    ret.AddRange(ExtractDnsAAAARecords(domainName));
 
                     var temp = ptr;
                     ptr = entry.pNext;
@@ -118,6 +65,73 @@ namespace PowerKrabsEtw.Internal.Details
                 }
                 while (ptr != IntPtr.Zero);
             }
+            return ret;
+        }
+
+        private IEnumerable<ManagedDnsCacheEntry> ExtractDnsARecords(string domain)
+        {
+            var resultPtr = IntPtr.Zero;
+            var ret = new List<ManagedDnsCacheEntry>();
+
+            if (Win32Interop.DnsQuery(ref domain, DnsRecordType.A, (DnsQueryType)0x8010, IntPtr.Zero, ref resultPtr, IntPtr.Zero) == 0)
+            {
+                var recordIndexPtr = resultPtr;
+
+                do
+                {
+                    var record = (DnsRecord)Marshal.PtrToStructure(recordIndexPtr, typeof(DnsRecord));
+                    if (record.RecordType == DnsRecordType.A)
+                    {
+                        int size = Marshal.SizeOf(record);
+                        recordIndexPtr += size;
+                        var ipv4 = (DnsARecord)Marshal.PtrToStructure(recordIndexPtr, typeof(DnsARecord));
+
+                        ret.Add(new ManagedDnsCacheEntry { DomainName = domain, Address = new IPAddress(ipv4.IpAddress) });
+                        recordIndexPtr = record.Next;
+                    }
+                    else
+                    {
+                        recordIndexPtr = IntPtr.Zero;
+                    }
+                } while (recordIndexPtr != IntPtr.Zero);
+
+                if (resultPtr != IntPtr.Zero) Win32Interop.DnsFree(resultPtr, DnsFreeType.FreeRecordList);
+            }
+
+            return ret;
+        }
+
+        private IEnumerable<ManagedDnsCacheEntry> ExtractDnsAAAARecords(string domain)
+        {
+            var resultPtr = IntPtr.Zero;
+            var ret = new List<ManagedDnsCacheEntry>();
+
+            if (Win32Interop.DnsQuery(ref domain, DnsRecordType.AAAA, (DnsQueryType)0x8010, IntPtr.Zero, ref resultPtr, IntPtr.Zero) == 0)
+            {
+                var recordIndexPtr = resultPtr;
+
+                do
+                {
+                    var record = (DnsRecord)Marshal.PtrToStructure(resultPtr, typeof(DnsRecord));
+                    if (record.RecordType == DnsRecordType.AAAA)
+                    {
+                        int size = Marshal.SizeOf(record);
+                        recordIndexPtr += size;
+                        var ipv6 = (DnsAAAARecord)Marshal.PtrToStructure(recordIndexPtr, typeof(DnsAAAARecord));
+                        var address = GetIPAddressFromDnsAAAARecord(ipv6);
+                        ret.Add(new ManagedDnsCacheEntry { DomainName = domain, Address = address });
+                        recordIndexPtr = record.Next;
+                    }
+                    else
+                    {
+                        recordIndexPtr = IntPtr.Zero;
+                    }
+                }
+                while (recordIndexPtr != IntPtr.Zero);
+
+                if (resultPtr != IntPtr.Zero) Win32Interop.DnsFree(resultPtr, DnsFreeType.FreeRecordList);
+            }
+
             return ret;
         }
 

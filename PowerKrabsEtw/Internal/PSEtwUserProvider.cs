@@ -2,6 +2,9 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using O365.Security.ETW;
+using PowerKrabsEtw.Internal.Details;
+using PowerKrabsEtw.Internal.ProviderSpecificHandler;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -13,9 +16,28 @@ namespace PowerKrabsEtw.Internal
         readonly List<IEventRecordDelegate> _onEventHandlers = new List<IEventRecordDelegate>();
         readonly List<PSEtwFilter> _filters = new List<PSEtwFilter>();
 
-        internal PSEtwUserProvider(Provider provider)
+        static readonly ProviderDictionary<IProviderSpecificHandler> _providerSpecificHandlers
+            = new ProviderDictionary<IProviderSpecificHandler>();
+
+        static PSEtwUserProvider()
+        {
+            _providerSpecificHandlers.AddValue("Microsoft-Windows-DNS-Client",
+                Guid.Parse("1c95126e-7eea-49a9-a3fe-a378b03ddb4d"),
+                new MicrosoftWindowsDNSClientHandler());
+        }
+
+        internal PSEtwUserProvider(Provider provider, string providerName)
         {
             _provider = provider;
+            var customHandlerProvider = _providerSpecificHandlers.GetByProviderName(providerName);
+            if (customHandlerProvider != null) AddOnEventHandler(customHandlerProvider.GetHandler());
+        }
+
+        internal PSEtwUserProvider(Provider provider, Guid providerGuid)
+        {
+            _provider = provider;
+            var customHandlerProvider = _providerSpecificHandlers.GetByProviderGuid(providerGuid);
+            if (customHandlerProvider != null) AddOnEventHandler(customHandlerProvider.GetHandler());
         }
 
         internal Provider Provider => _provider;

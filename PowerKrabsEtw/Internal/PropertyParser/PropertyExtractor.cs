@@ -13,7 +13,7 @@ namespace PowerKrabsEtw.Internal.PropertyParser
     internal class PropertyExtractor
     {
         readonly bool _includeVerboseProperties;
-        static ProviderDictionary providerDictionary = new ProviderDictionary();
+        static ProviderDictionary<IPropertyParser> providerDictionary = new ProviderDictionary<IPropertyParser>();
 
         static PropertyExtractor()
         {

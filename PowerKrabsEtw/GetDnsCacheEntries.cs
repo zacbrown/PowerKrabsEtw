@@ -8,7 +8,7 @@ namespace PowerKrabsEtw
     {
         protected override void BeginProcessing()
         {
-            using (var dns = new DnsHelper())
+            using (var dns = new DnsCacheHelper())
             {
                 var ret = dns.GetDnsCacheEntries();
 

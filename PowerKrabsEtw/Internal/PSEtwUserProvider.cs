@@ -29,15 +29,21 @@ namespace PowerKrabsEtw.Internal
         internal PSEtwUserProvider(Provider provider, string providerName)
         {
             _provider = provider;
-            var customHandlerProvider = _providerSpecificHandlers.GetByProviderName(providerName);
-            if (customHandlerProvider != null) AddOnEventHandler(customHandlerProvider.GetHandler());
+            if (_providerSpecificHandlers.Contains(providerName))
+            {
+                var customHandlerProvider = _providerSpecificHandlers.GetByProviderName(providerName);
+                AddOnEventHandler(customHandlerProvider.GetHandler());
+            }
         }
 
         internal PSEtwUserProvider(Provider provider, Guid providerGuid)
         {
             _provider = provider;
-            var customHandlerProvider = _providerSpecificHandlers.GetByProviderGuid(providerGuid);
-            if (customHandlerProvider != null) AddOnEventHandler(customHandlerProvider.GetHandler());
+            if (_providerSpecificHandlers.Contains(providerGuid))
+            {
+                var customHandlerProvider = _providerSpecificHandlers.GetByProviderGuid(providerGuid);
+                AddOnEventHandler(customHandlerProvider.GetHandler());
+            }
         }
 
         internal Provider Provider => _provider;

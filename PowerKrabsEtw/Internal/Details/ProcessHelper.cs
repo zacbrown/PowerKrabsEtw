@@ -17,7 +17,7 @@ namespace PowerKrabsEtw.Internal
             STARTUPINFO si = new STARTUPINFO();
             PROCESS_INFORMATION pi = new PROCESS_INFORMATION();
             bool success = Win32Interop.CreateProcess(fullProcessPath, commandLine,
-                IntPtr.Zero, IntPtr.Zero, false, ProcessCreationFlags.CREATE_SUSPENDED,
+                IntPtr.Zero, IntPtr.Zero, false, ProcessCreationFlags.CREATE_SUSPENDED | ProcessCreationFlags.CREATE_NEW_CONSOLE,
                 IntPtr.Zero, null, ref si, out pi);
             var threadHandle = pi.hThread;
             PID = pi.dwProcessId;

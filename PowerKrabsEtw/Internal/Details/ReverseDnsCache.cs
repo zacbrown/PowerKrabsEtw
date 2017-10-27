@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Zac Brown. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -26,15 +27,23 @@ namespace PowerKrabsEtw.Internal.Details
             }
             else
             {
-                _cache.Add(addr, new HashSet<string> { domain });
+                _cache.Add(addr, new HashSet<string>(StringComparer.OrdinalIgnoreCase) { domain });
             }
         }
 
-        internal static IEnumerable<string> GetDomains(IPAddress addr)
+        internal static IEnumerable<string> GetDomainsByIPAddress(IPAddress addr)
         {
             if (_cache.ContainsKey(addr)) return _cache[addr];
 
             return Enumerable.Empty<string>();
+        }
+
+        internal static IEnumerable<IPAddress> GetIPAddressesByDomain(string domain)
+        {
+            return _cache
+                .Where(kv => kv.Value.Contains(domain))
+                .Select(kv => kv.Key)
+                .ToArray();
         }
     }
 }

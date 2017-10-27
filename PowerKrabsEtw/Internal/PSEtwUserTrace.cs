@@ -109,6 +109,8 @@ namespace PowerKrabsEtw.Internal
             _callback.Invoke(obj);
         }
 
+        public bool HasPumpedEvents => _trace.QueryStats().EventsHandled > 0;
+
         public bool IsRunning => _isRunning;
     }
 }

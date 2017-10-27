@@ -47,7 +47,7 @@ namespace PowerKrabsEtw.Internal.Details
             }
         }
 
-        public void RemoveByProviderString(Guid guid)
+        public void RemoveByProviderGuid(Guid guid)
         {
             lock (_lock)
             {

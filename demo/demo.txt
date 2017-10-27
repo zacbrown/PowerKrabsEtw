@@ -1,0 +1,3 @@
+Import-Module .\PowerKrabsEtw
+Get-Module PowerKrabsEtw | select -Expand ExportedCommands
+

@@ -34,8 +34,8 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="O365.Security.Native.ETW, Version=1.0.6502.36848, Culture=neutral, PublicKeyToken=bc3a2e4ba4c5fbd5, processorArchitecture=AMD64">
-      <HintPath>..\packages\O365.Security.Native.ETW.Debug.1.0.10\lib\net45\O365.Security.Native.ETW.dll</HintPath>
+    <Reference Include="O365.Security.Native.ETW, Version=1.0.6517.15099, Culture=neutral, PublicKeyToken=bc3a2e4ba4c5fbd5, processorArchitecture=AMD64">
+      <HintPath>..\packages\O365.Security.Native.ETW.1.0.10\lib\net45\O365.Security.Native.ETW.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />

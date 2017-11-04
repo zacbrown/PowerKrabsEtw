@@ -1,4 +1,5 @@
 ﻿using PowerKrabsEtw.Internal;
+using System;
 using System.Collections.Generic;
 using System.Management.Automation;
 // Copyright (c) Zac Brown. All rights reserved.
@@ -27,6 +28,12 @@ namespace PowerKrabsEtw
                 {
                     lock (_lock) { _records.Add(obj); }
                 });
+
+                while (!Trace.HasPumpedEvents)
+                {
+                    Console.WriteLine("Waiting for trace to start...");
+                    Thread.Sleep(1000);
+                }
 
                 while (!Stopping)
                 {

@@ -5,6 +5,7 @@ using O365.Security.ETW;
 using PowerKrabsEtw.Internal.Details;
 using PowerKrabsEtw.Internal.PropertyParser;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Management.Automation;
 
@@ -33,22 +34,23 @@ namespace PowerKrabsEtw.Internal.PropertyParser
             _includeVerboseProperties = includeVerboseProperties;
         }
 
-        internal PSObject Extract(IEventRecord record)
+        internal IDictionary<string, object> Extract(IEventRecord record)
         {
             var obj = new PSObject();
+            var dict = new Dictionary<string, object>();
 
-            obj.Properties.Add(new PSNoteProperty("EventId", record.Id));
-            obj.Properties.Add(new PSNoteProperty(nameof(record.Timestamp), record.Timestamp));
-            obj.Properties.Add(new PSNoteProperty(nameof(record.ProcessId), record.ProcessId));
-            obj.Properties.Add(new PSNoteProperty(nameof(record.ThreadId), record.ThreadId));
+            dict.Add("EventId", record.Id);
+            dict.Add(nameof(record.Timestamp), record.Timestamp);
+            dict.Add(nameof(record.ProcessId), record.ProcessId);
+            dict.Add(nameof(record.ThreadId), record.ThreadId);
+            dict.Add(nameof(record.ProviderName), record.ProviderName);
 
             if (_includeVerboseProperties)
             {
-                obj.Properties.Add(new PSNoteProperty("EventName", record.Name));
-                obj.Properties.Add(new PSNoteProperty(nameof(record.ProviderName), record.ProviderName));
-                obj.Properties.Add(new PSNoteProperty(nameof(record.ProviderId), record.ProviderId));
-                obj.Properties.Add(new PSNoteProperty(nameof(record.Version), record.Version));
-                obj.Properties.Add(new PSNoteProperty(nameof(record.Level), record.Level));
+                dict.Add("EventName", record.Name);
+                dict.Add(nameof(record.ProviderId), record.ProviderId);
+                dict.Add(nameof(record.Version), record.Version);
+                dict.Add(nameof(record.Level), record.Level);
             }
 
             IPropertyParser parser = null;
@@ -65,17 +67,17 @@ namespace PowerKrabsEtw.Internal.PropertyParser
                 {
                     foreach (var parsedProp in parsed)
                     {
-                        obj.Properties.Add(new PSNoteProperty(parsedProp.Key, parsedProp.Value));
+                        dict.Add(parsedProp.Key, parsedProp.Value);
                     }
                 }
                 else
                 {
-                    obj.Properties.Add(new PSNoteProperty(p.Name, ParseBasicProperty(p, record)));
+                    dict.Add(p.Name, ParseBasicProperty(p, record));
                 }
             }
 
 
-            return obj;
+            return dict;
         }
 
         private object ParseBasicProperty(Property prop, IEventRecord record)

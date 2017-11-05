@@ -34,6 +34,9 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.10.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="O365.Security.Native.ETW, Version=1.0.6517.15099, Culture=neutral, PublicKeyToken=bc3a2e4ba4c5fbd5, processorArchitecture=AMD64">
       <HintPath>..\packages\O365.Security.Native.ETW.1.0.10\lib\net45\O365.Security.Native.ETW.dll</HintPath>
     </Reference>
@@ -49,6 +52,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="GetDnsCacheEntries.cs" />
+    <Compile Include="Internal\Details\DictionaryExtensions.cs" />
     <Compile Include="Internal\Details\DnsCacheHelper.cs" />
     <Compile Include="Internal\Details\ParsedDnsRecord.cs" />
     <Compile Include="Internal\Details\ReverseDnsCache.cs" />
@@ -78,6 +82,7 @@
     <Compile Include="SetEtwUserProvider.cs" />
     <Compile Include="StartEtwUserTrace.cs" />
     <Compile Include="StartProcessSuspended.cs" />
+    <Compile Include="TraceProcessWithEtw.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

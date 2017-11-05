@@ -106,7 +106,7 @@ namespace PowerKrabsEtw.Internal
         internal void DefaultEventRecordHandler(IEventRecord record)
         {
             var obj = _propertyExtractor.Extract(record);
-            _callback.Invoke(obj);
+            _callback.Invoke(obj.ToPSObject());
         }
 
         public bool HasPumpedEvents => _trace.QueryStats().EventsHandled > 0;

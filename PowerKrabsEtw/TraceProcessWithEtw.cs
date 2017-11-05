@@ -94,7 +94,7 @@ namespace PowerKrabsEtw
                 }
                 finally
                 {
-                    Console.WriteLine($"{ProcessName} exited. Stopping trace.")
+                    Console.WriteLine($"{ProcessName} exited. Stopping trace.");
                     trace.Stop();
                 }
             }

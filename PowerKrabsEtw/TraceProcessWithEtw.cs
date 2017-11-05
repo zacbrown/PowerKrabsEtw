@@ -64,7 +64,7 @@ namespace PowerKrabsEtw
                     Console.WriteLine($"Setting up trace...");
                     trace = SetupEtwTrace(writer);
 
-                    Console.WriteLine($"ETW trace setup, resuming {ProcessName} (PID {_processId})");
+                    Console.WriteLine($"ETW trace setup, resuming {ProcessName} (PID {_processId})...");
                     ProcessHelper.ResumeProcess(_processHandle);
 
                     Console.WriteLine("Hit enter to start...");
@@ -85,7 +85,7 @@ namespace PowerKrabsEtw
                     {
                         lock (_lock)
                         {
-                            Console.WriteLine($"Processed {_eventCounts} events in last {sleepTimeSpan.Seconds} seconds");
+                            Console.WriteLine($"Processed {_eventCounts} events in last {sleepTimeSpan.Seconds} seconds...");
                             _eventCounts = 0;
                         }
                         
@@ -94,6 +94,7 @@ namespace PowerKrabsEtw
                 }
                 finally
                 {
+                    Console.WriteLine($"{ProcessName} exited. Stopping trace.")
                     trace.Stop();
                 }
             }

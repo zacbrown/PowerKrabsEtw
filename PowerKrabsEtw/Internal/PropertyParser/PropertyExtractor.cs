@@ -137,6 +137,10 @@ namespace PowerKrabsEtw.Internal.PropertyParser
                     propertyValue = record.GetDateTime(prop.Name);
                     break;
 
+                case (int)TDH_IN_TYPE.TDH_INTYPE_POINTER:
+                    propertyValue = record.GetUInt64(prop.Name);
+                    break;
+
                 default:
                     propertyValue = "<Unknown type>";
                     break;

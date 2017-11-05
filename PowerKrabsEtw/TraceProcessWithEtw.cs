@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using O365.Security.ETW;
 using PowerKrabsEtw.Internal;
 using PowerKrabsEtw.Internal.PropertyParser;
@@ -9,7 +10,9 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Management.Automation;
+using System.Net;
 using System.Threading;
 
 namespace PowerKrabsEtw
@@ -80,7 +83,7 @@ namespace PowerKrabsEtw
                         Thread.Sleep(1000);
                     }
 
-                    TimeSpan sleepTimeSpan = TimeSpan.FromSeconds(2);
+                    var sleepTimeSpan = TimeSpan.FromSeconds(2);
                     while (!Stopping && !_cts.IsCancellationRequested)
                     {
                         lock (_lock)
@@ -98,6 +101,93 @@ namespace PowerKrabsEtw
                     trace.Stop();
                 }
             }
+
+            try
+            {
+                WriteObject(BuildSummaryFromOutputFile(OutputFile));
+            }
+            catch
+            {
+                // TODO: log error?
+            }
+        }
+
+        private PSObject BuildSummaryFromOutputFile(string filename)
+        {
+            var ret = new PSObject();
+            var dict = new Dictionary<string, List<JObject>>();
+
+            using (var reader = new StreamReader(filename))
+            {
+                while (!reader.EndOfStream)
+                {
+                    var line = reader.ReadLine();
+                    var obj = JObject.Parse(line);
+                    var provider = (string)obj[nameof(IEventRecord.ProviderName)];
+
+                    if (!dict.ContainsKey(provider))
+                    {
+                        dict[provider] = new List<JObject>();
+                    }
+
+                    dict[provider].Add(obj);
+                }
+            }
+
+            foreach (var kv in dict)
+            {
+                switch (kv.Key)
+                {
+                    case "Microsoft-Windows-Kernel-Process":
+                        SummarizeProcessActivity(ret, kv.Value);
+                        break;
+                    case "Microsoft-Windows-Kernel-Network":
+                        SummarizeNetworkActivity(ret, kv.Value);
+                        break;
+                    case "Microsoft-Windows-PowerShell":
+                        SummarizePowerShellActivity(ret, kv.Value);
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            return ret;
+        }
+
+        private void SummarizeProcessActivity(PSObject output, List<JObject> records)
+        {
+            var dllsLoaded = new HashSet<string>(
+                records
+                    .Where(r => (int)r["EventId"] == 5)
+                    .Select(r => (string)r["ImageName"])
+                    .ToArray(),
+                StringComparer.OrdinalIgnoreCase);
+
+            output.Properties.Add(new PSNoteProperty("DllsLoaded", dllsLoaded));
+
+            var processesInjectedInto = new HashSet<string>(
+                records
+                    .Where(r => (int)r["EventId"] == 3)
+                    .Select(r => (string)r["TargetProcessName"])
+                    .ToArray(),
+                StringComparer.OrdinalIgnoreCase);
+
+            output.Properties.Add(new PSNoteProperty("PossibleInjectedProcesses", processesInjectedInto));
+        }
+
+        private void SummarizeNetworkActivity(PSObject output, List<JObject> records)
+        {
+            var networkEndpoints = records
+                .Where(r => r["daddr"] != null)
+                .Select(r => r["daddr"].Cast<IPAddress>());
+
+            output.Properties.Add(new PSNoteProperty("NetworkEndpoints", networkEndpoints));
+        }
+
+        private void SummarizePowerShellActivity(PSObject output, List<JObject>records)
+        {
+
         }
 
         #region Provider Helpers
@@ -128,20 +218,27 @@ namespace PowerKrabsEtw
             var startStopFilter = new EventFilter(Filter.EventIdIs(1).Or(Filter.EventIdIs(2)));
             startStopFilter.OnEvent += (IEventRecord r) =>
             {
-                if (r.Id == 1)
+                try
                 {
-                    var parentProcessId = r.GetUInt32("ParentProcessID");
-                    if (parentProcessId == _processId)
+                    if (r.Id == 1)
+                    {
+                        var parentProcessId = r.GetUInt32("ParentProcessID");
+                        if (parentProcessId == _processId)
+                        {
+                            var obj = JsonConvert.SerializeObject(_propertyExtractor.Extract(r), _serialiazerSettings);
+                            writer.WriteLine(obj);
+                        }
+                    }
+                    else if (r.Id == 2 && r.ProcessId == _processId)
                     {
                         var obj = JsonConvert.SerializeObject(_propertyExtractor.Extract(r), _serialiazerSettings);
                         writer.WriteLine(obj);
+                        _cts.Cancel();
                     }
                 }
-                else if (r.Id == 2 && r.ProcessId == _processId)
+                catch
                 {
-                    var obj = JsonConvert.SerializeObject(_propertyExtractor.Extract(r), _serialiazerSettings);
-                    writer.WriteLine(obj);
-                    _cts.Cancel();
+                    // TODO: log bad record parse
                 }
             };
             processProvider.AddFilter(startStopFilter);
@@ -150,9 +247,15 @@ namespace PowerKrabsEtw
             var imageLoadFilter = new EventFilter(Filter.ProcessIdIs((int)_processId).And(Filter.EventIdIs(5)));
             imageLoadFilter.OnEvent += (IEventRecord r) =>
             {
-                var psObj = _propertyExtractor.Extract(r);
-                var obj = JsonConvert.SerializeObject(psObj, _serialiazerSettings);
-                writer.WriteLine(obj);
+                try
+                {
+                    var obj = JsonConvert.SerializeObject(_propertyExtractor.Extract(r), _serialiazerSettings);
+                    writer.WriteLine(obj);
+                }
+                catch
+                {
+                    // TODO: log bad record parse
+                }
             };
             processProvider.AddFilter(imageLoadFilter);
 
@@ -160,21 +263,31 @@ namespace PowerKrabsEtw
             var threadFilter = new EventFilter(Filter.ProcessIdIs((int)_processId).And(Filter.EventIdIs(3)));
             threadFilter.OnEvent += (IEventRecord r) =>
             {
-                var targetProcessId = (int)r.GetUInt32("ProcessID");
-                var targetProcess = Process.GetProcessById(targetProcessId);
-                var targetProcessName = targetProcess.ProcessName;
-
-                // If the process start for the target process is more than
-                // 10 milliseconds after the thread creation time, then it
-                // is a good chance this is not the initial thread.
-                var diff = r.Timestamp.Subtract(targetProcess.StartTime);
-                if (diff.TotalMilliseconds > 10)
+                try
                 {
-                    var obj = _propertyExtractor.Extract(r);
-                    obj.Add("TargetProcessName", targetProcessName);
+                    var targetProcessId = (int)r.GetUInt32("ProcessID");
 
-                    var serialized = JsonConvert.SerializeObject(obj, _serialiazerSettings);
-                    writer.WriteLine(obj);
+                    if (targetProcessId != r.ProcessId)
+                    {
+                        var targetProcess = Process.GetProcessById(targetProcessId);
+                        var targetProcessName = targetProcess.ProcessName;
+
+                        // If the process start for the target process is more than
+                        // 10 milliseconds after the thread creation time, then it
+                        // is a good chance this is not the initial thread.
+                        var diff = r.Timestamp.Subtract(targetProcess.StartTime);
+                        if (diff.TotalMilliseconds > 10)
+                        {
+                            var obj = _propertyExtractor.Extract(r);
+                            obj.Add("TargetProcessName", targetProcessName);
+
+                            writer.WriteLine(JsonConvert.SerializeObject(obj, _serialiazerSettings));
+                        }
+                    }
+                }
+                catch
+                {
+                    // TODO: log bad record parse
                 }
             };
             processProvider.AddFilter(threadFilter);
@@ -190,8 +303,15 @@ namespace PowerKrabsEtw
             var filter = new EventFilter(Filter.ProcessIdIs((int)_processId).And(Filter.EventIdIs(7937)));
             filter.OnEvent += (IEventRecord r) =>
             {
-                var obj = JsonConvert.SerializeObject(_propertyExtractor.Extract(r), _serialiazerSettings);
-                writer.WriteLine(obj);
+                try
+                {
+                    var obj = JsonConvert.SerializeObject(_propertyExtractor.Extract(r), _serialiazerSettings);
+                    writer.WriteLine(obj);
+                }
+                catch
+                {
+                    // TODO: log bad record parse
+                }
             };
 
             return new PSEtwUserProvider(powershellProvider, providerName);
@@ -205,9 +325,16 @@ namespace PowerKrabsEtw
 
             IEventRecordDelegate callback = (IEventRecord r) =>
             {
-                var psObj = _propertyExtractor.Extract(r);
-                var obj = JsonConvert.SerializeObject(psObj, _serialiazerSettings);
-                writer.WriteLine(obj);
+                try
+                {
+                    var psObj = _propertyExtractor.Extract(r);
+                    var obj = JsonConvert.SerializeObject(psObj, _serialiazerSettings);
+                    writer.WriteLine(obj);
+                }
+                catch
+                {
+                    // TODO: log bad record parse
+                }
             };
 
             var filterProcessIdAndEventId = Filter.ProcessIdIs((int)_processId)
@@ -277,8 +404,15 @@ namespace PowerKrabsEtw
 
             filter.OnEvent += (IEventRecord r) =>
             {
-                var obj = JsonConvert.SerializeObject(_propertyExtractor.Extract(r), _serialiazerSettings);
-                writer.WriteLine(obj);
+                try
+                {
+                    var obj = JsonConvert.SerializeObject(_propertyExtractor.Extract(r), _serialiazerSettings);
+                    writer.WriteLine(obj);
+                }
+                catch
+                {
+                    // TODO: log bad record parse
+                }
             };
 
             networkProvider.AddFilter(filter);
@@ -302,8 +436,15 @@ namespace PowerKrabsEtw
 
             filter.OnEvent += (IEventRecord r) =>
             {
-                var obj = JsonConvert.SerializeObject(_propertyExtractor.Extract(r), _serialiazerSettings);
-                writer.WriteLine(obj);
+                try
+                {
+                    var obj = JsonConvert.SerializeObject(_propertyExtractor.Extract(r), _serialiazerSettings);
+                    writer.WriteLine(obj);
+                }
+                catch
+                {
+                    // TODO: log bad record parse
+                }
             };
 
             dnsProvider.AddFilter(filter);

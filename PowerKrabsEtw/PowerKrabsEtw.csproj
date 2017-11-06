@@ -54,6 +54,7 @@
     <Compile Include="GetDnsCacheEntries.cs" />
     <Compile Include="Internal\Details\DictionaryExtensions.cs" />
     <Compile Include="Internal\Details\DnsCacheHelper.cs" />
+    <Compile Include="Internal\Details\JsonIPAddressConverter.cs" />
     <Compile Include="Internal\Details\ParsedDnsRecord.cs" />
     <Compile Include="Internal\Details\ReverseDnsCache.cs" />
     <Compile Include="Internal\Details\Win32Interop.cs" />

@@ -29,7 +29,7 @@ namespace PowerKrabsEtw
                     lock (_lock) { _records.Add(obj); }
                 });
 
-                while (!Trace.HasPumpedEvents)
+                while (!Trace.HasPumpedEvents && !Stopping)
                 {
                     Console.WriteLine("Waiting for trace to start...");
                     Thread.Sleep(1000);

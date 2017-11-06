@@ -35,7 +35,7 @@ namespace PowerKrabsEtw.Internal.PropertyParser
             }
         }
 
-        private IPAddress ParseDaddr(IEventRecord record) => record.GetIPAddress(nameof(PropertyNames.saddr));
-        private IPAddress ParseSaddr(IEventRecord record) => record.GetIPAddress(nameof(PropertyNames.daddr));
+        private IPAddress ParseDaddr(IEventRecord record) => record.GetIPAddress(nameof(PropertyNames.daddr));
+        private IPAddress ParseSaddr(IEventRecord record) => record.GetIPAddress(nameof(PropertyNames.saddr));
     }
 }

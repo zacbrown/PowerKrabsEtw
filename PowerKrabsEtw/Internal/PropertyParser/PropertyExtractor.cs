@@ -36,21 +36,22 @@ namespace PowerKrabsEtw.Internal.PropertyParser
 
         internal IDictionary<string, object> Extract(IEventRecord record)
         {
-            var obj = new PSObject();
             var dict = new Dictionary<string, object>();
+            var header = new Dictionary<string, object>();
+            dict["EtwHeader"] = header;
 
-            dict.Add("EventId", record.Id);
-            dict.Add(nameof(record.Timestamp), record.Timestamp);
-            dict.Add(nameof(record.ProcessId), record.ProcessId);
-            dict.Add(nameof(record.ThreadId), record.ThreadId);
-            dict.Add(nameof(record.ProviderName), record.ProviderName);
+            header.Add("EventId", record.Id);
+            header.Add(nameof(record.Timestamp), record.Timestamp);
+            header.Add(nameof(record.ProcessId), record.ProcessId);
+            header.Add(nameof(record.ThreadId), record.ThreadId);
+            header.Add(nameof(record.ProviderName), record.ProviderName);
 
             if (_includeVerboseProperties)
             {
-                dict.Add("EventName", record.Name);
-                dict.Add(nameof(record.ProviderId), record.ProviderId);
-                dict.Add(nameof(record.Version), record.Version);
-                dict.Add(nameof(record.Level), record.Level);
+                header.Add("EventName", record.Name);
+                header.Add(nameof(record.ProviderId), record.ProviderId);
+                header.Add(nameof(record.Version), record.Version);
+                header.Add(nameof(record.Level), record.Level);
             }
 
             IPropertyParser parser = null;

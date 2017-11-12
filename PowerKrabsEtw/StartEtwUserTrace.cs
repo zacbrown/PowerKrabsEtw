@@ -1,6 +1,7 @@
 ﻿using PowerKrabsEtw.Internal;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Management.Automation;
 // Copyright (c) Zac Brown. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
@@ -16,6 +17,10 @@ namespace PowerKrabsEtw
         [ValidateNotNull]
         public PSEtwUserTrace Trace { get; set; }
 
+        [Parameter()]
+        [ValidateNotNullOrEmpty]
+        public TimeSpan TraceTimeLimit { get; set; } = TimeSpan.MaxValue;
+
         readonly object _lock = new object();
         readonly List<PSObject> _records = new List<PSObject>();
 
@@ -23,7 +28,9 @@ namespace PowerKrabsEtw
         {
             try
             {
-                while (Host.UI.RawUI.KeyAvailable) Host.UI.RawUI.ReadKey();
+                // BUGBUG: At times, it seemed this was necessary to deal with PSReadline messing with stuff?
+                //while (Host.UI.RawUI.KeyAvailable) Host.UI.RawUI.ReadKey();
+
                 Trace.Start((obj) =>
                 {
                     lock (_lock) { _records.Add(obj); }
@@ -31,11 +38,13 @@ namespace PowerKrabsEtw
 
                 while (!Trace.HasPumpedEvents && !Stopping)
                 {
-                    Console.WriteLine("Waiting for trace to start...");
+                    WriteVerbose("Waiting for trace to start...");
                     Thread.Sleep(1000);
                 }
 
-                while (!Stopping)
+                var stopwatch = new Stopwatch();
+                stopwatch.Start();
+                while (!Stopping && stopwatch.Elapsed < TraceTimeLimit)
                 {
                     lock (_lock)
                     {
@@ -49,6 +58,7 @@ namespace PowerKrabsEtw
                     Thread.Sleep(100);
                 }
             }
+            catch (PipelineStoppedException) { }
             finally
             {
                 Trace.Stop();

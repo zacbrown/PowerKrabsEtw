@@ -286,3 +286,8 @@ __pycache__/
 *.btm.cs
 *.odx.cs
 *.xsd.cs
+
+# demo exes/dlls
+demo/*.dll
+demo/*.exe
+demo/*.psd1

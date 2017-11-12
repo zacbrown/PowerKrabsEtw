@@ -1,0 +1,8 @@
+Import-Module .\PowerKrabsEtw
+$trace = New-KrabsEtwUserTrace
+$provider = New-KrabsEtwUserProvider -ProviderName "Microsoft-Windows-WMI-Activity"
+$filter = New-KrabsEtwCallbackFilter -EventId 11
+Set-KrabsEtwCallbackFilter -UserProvider $provider -Filter $filter
+Set-KrabsEtwUserProvider -Trace $trace -Provider $provider
+cls
+Start-KrabsEtwUserTrace -Trace $trace -Verbose -TraceTimeLimit ([TimeSpan]::FromSeconds(10)) | Where-Object { $_.Operation -match "Win32_Process::Create" }

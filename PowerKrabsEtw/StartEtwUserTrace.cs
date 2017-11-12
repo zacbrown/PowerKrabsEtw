@@ -1,11 +1,11 @@
-﻿using PowerKrabsEtw.Internal;
+﻿// Copyright (c) Zac Brown. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using PowerKrabsEtw.Internal;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Management.Automation;
-// Copyright (c) Zac Brown. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
-
 using System.Threading;
 
 namespace PowerKrabsEtw

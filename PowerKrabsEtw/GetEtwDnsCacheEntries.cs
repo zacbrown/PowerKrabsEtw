@@ -1,4 +1,7 @@
-﻿using PowerKrabsEtw.Internal.Details;
+﻿// Copyright (c) Zac Brown. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using PowerKrabsEtw.Internal.Details;
 using System.Management.Automation;
 using System.Linq;
 using System.Net;

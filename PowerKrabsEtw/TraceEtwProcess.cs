@@ -8,10 +8,7 @@ using PowerKrabsEtw.Internal.PropertyParser;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using System.Linq;
 using System.Management.Automation;
-using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 

@@ -71,25 +71,38 @@ namespace PowerKrabsEtw
                 try
                 {
                     _processHandle = ProcessHelper.LaunchProcessSuspended(ProcessName, ProcessArguments, out _processId, out _fullProcessPath);
-                    Console.WriteLine($"{ProcessName} started suspended with PID {_processId}...");
+                    WriteVerbose($"{ProcessName} started suspended with PID {_processId}...");
+                    WriteProgress(new ProgressRecord(0, "Trace-EtwProcess", "Step 1 (launch process suspended)")
+                    {
+                        PercentComplete = 25
+                    });
 
-                    Console.WriteLine($"Setting up trace...");
+                    WriteVerbose($"Setting up trace...");
                     trace = SetupEtwTrace(writer);
 
-                    Console.WriteLine("Hit enter to start...");
-                    while (Host.UI.RawUI.KeyAvailable) Host.UI.RawUI.ReadKey();
+                    // BUGBUG: At times, it seemed this was necessary to deal with PSReadline messing with stuff?
+                    //while (Host.UI.RawUI.KeyAvailable) Host.UI.RawUI.ReadKey();
+
                     trace.Start((obj) =>
                     {
                         Interlocked.Increment(ref _eventCounts);
                     });
+                    WriteVerbose($"ETW trace setup, resuming {ProcessName} (PID {_processId})...");
+                    WriteProgress(new ProgressRecord(0, "Trace-EtwProcess", "Step 2 (trace setup)")
+                    {
+                        PercentComplete = 50
+                    });
 
-                    Console.WriteLine($"ETW trace setup, resuming {ProcessName} (PID {_processId})...");
                     ProcessHelper.ResumeProcess(_processHandle);
+                    WriteProgress(new ProgressRecord(0, "Trace-EtwProcess", "Step 3 (resume process)")
+                    {
+                        PercentComplete = 75
+                    });
 
                     while (_eventCounts == 0 && !Stopping)
                     {
-                        Console.WriteLine("Waiting for trace to start...");
-                        Thread.Sleep(1000);
+                        WriteVerbose("Waiting for trace to start...");
+                        Thread.Sleep(TimeSpan.FromSeconds(1));
                     }
 
                     var sleepTimeSpan = TimeSpan.FromSeconds(2);
@@ -97,7 +110,7 @@ namespace PowerKrabsEtw
                     {
                         lock (_lock)
                         {
-                            Console.WriteLine($"Processed {_eventCounts} events in last {sleepTimeSpan.Seconds} seconds...");
+                            WriteVerbose($"Processed {_eventCounts} events in last {sleepTimeSpan.Seconds} seconds...");
                             _eventCounts = 0;
                         }
 
@@ -108,13 +121,16 @@ namespace PowerKrabsEtw
                 {
                     var error = new ErrorRecord(ex, ex.GetType().ToString(), ErrorCategory.InvalidOperation, null);
                     WriteError(error);
-                    Console.WriteLine(ex.StackTrace);
                 }
                 finally
                 {
-                    Console.WriteLine($"{ProcessName} exited. Stopping trace.");
+                    WriteVerbose($"{ProcessName} exited. Stopping trace.");
                     if (trace.IsRunning) trace.Stop();
-                    Console.WriteLine($"OutputFile full path is {OutputFile}");
+                    WriteProgress(new ProgressRecord(0, "Trace-EtwProcess", "Step 4 (stop trace)")
+                    {
+                        PercentComplete = 100
+                    });
+                    WriteVerbose($"OutputFile full path is {OutputFile}");
                 }
             }
 
@@ -268,7 +284,6 @@ namespace PowerKrabsEtw
                         writer.WriteLine(obj);
 
                         const int secondsToWait = 10;
-                        Console.WriteLine($"Process exited, waiting {secondsToWait} seconds for ETW events to finish pumping...");
                         // We wait ten seconds to give ourselves a chance to process
                         // any remaining items relevant to the process.
                         Task.Run(() => {
@@ -277,8 +292,9 @@ namespace PowerKrabsEtw
                         });
                     }
                 }
-                catch
+                catch (Exception ex)
                 {
+                    Console.WriteLine($"{ex.Message}\n{ex.StackTrace}");
                     // TODO: log bad record parse
                 }
             };

@@ -135,6 +135,19 @@ namespace PowerKrabsEtw
             return trace;
         }
 
+        void DefaultEventHandler(IEventRecord r)
+        {
+            try
+            {
+                var obj = _propertyExtractor.Extract(r);
+                lock (_lock) { _records.Add(obj.ToPSObject()); }
+            }
+            catch
+            {
+                // TODO: log bad record parse
+            }
+        }
+
         private PSEtwUserProvider CreateProcessProvider()
         {
             const string providerName = "Microsoft-Windows-Kernel-Process";
@@ -179,18 +192,7 @@ namespace PowerKrabsEtw
 
             // image load
             var imageLoadFilter = new EventFilter(Filter.ProcessIdIs((int)_processId).And(Filter.EventIdIs(5)));
-            imageLoadFilter.OnEvent += (IEventRecord r) =>
-            {
-                try
-                {
-                    var obj = _propertyExtractor.Extract(r);
-                    lock (_lock) { _records.Add(obj.ToPSObject()); }
-                }
-                catch
-                {
-                    // TODO: log bad record parse
-                }
-            };
+            imageLoadFilter.OnEvent += DefaultEventHandler;
             processProvider.AddFilter(imageLoadFilter);
 
             // thread injection
@@ -236,18 +238,7 @@ namespace PowerKrabsEtw
             var filter = new EventFilter(Filter.ProcessIdIs((int)_processId)
                 .And(Filter.EventIdIs(7937))
                 .And(UnicodeString.Contains("Payload", "Started.")));
-            filter.OnEvent += (IEventRecord r) =>
-            {
-                try
-                {
-                    var obj = _propertyExtractor.Extract(r);
-                    lock (_lock) { _records.Add(obj.ToPSObject()); }
-                }
-                catch
-                {
-                    // TODO: log bad record parse
-                }
-            };
+            filter.OnEvent += DefaultEventHandler;
             powershellProvider.AddFilter(filter);
 
             return new PSEtwUserProvider(powershellProvider, providerName);
@@ -300,18 +291,7 @@ namespace PowerKrabsEtw
                     .Or(Filter.EventIdIs(IPv6UdpSend))));
             var filter = new EventFilter(processIdFilter.And(eventIdFilter));
 
-            filter.OnEvent += (IEventRecord r) =>
-            {
-                try
-                {
-                    var obj = _propertyExtractor.Extract(r);
-                    lock (_lock) { _records.Add(obj.ToPSObject()); }
-                }
-                catch
-                {
-                    // TODO: log bad record parse
-                }
-            };
+            filter.OnEvent += DefaultEventHandler;
 
             networkProvider.AddFilter(filter);
             return new PSEtwUserProvider(networkProvider, providerName);
@@ -331,18 +311,7 @@ namespace PowerKrabsEtw
                     .Or(Filter.EventIdIs(LiveLookupEventId)));
             var filter = new EventFilter(eventIdFilter);
 
-            filter.OnEvent += (IEventRecord r) =>
-            {
-                try
-                {
-                    var obj = _propertyExtractor.Extract(r);
-                    lock (_lock) { _records.Add(obj.ToPSObject()); }
-                }
-                catch
-                {
-                    // TODO: log bad record parse
-                }
-            };
+            filter.OnEvent += DefaultEventHandler;
 
             dnsProvider.AddFilter(filter);
             return new PSEtwUserProvider(dnsProvider, providerName);
@@ -353,21 +322,8 @@ namespace PowerKrabsEtw
             const string providerName = "Microsoft-Windows-Kernel-Registry";
             var registryProvider = new Provider(providerName);
 
-            IEventRecordDelegate callback = (IEventRecord r) =>
-            {
-                try
-                {
-                    var obj = _propertyExtractor.Extract(r);
-                    lock (_lock) { _records.Add(obj.ToPSObject()); }
-                }
-                catch
-                {
-                    // TODO: log bad record parse
-                }
-            };
-
             var filter = new EventFilter(Filter.ProcessIdIs((int)_processId));
-            filter.OnEvent += callback;
+            filter.OnEvent += DefaultEventHandler;
             registryProvider.AddFilter(filter);
 
             return new PSEtwUserProvider(registryProvider, providerName);
@@ -376,26 +332,13 @@ namespace PowerKrabsEtw
         private PSEtwUserProvider CreateFileProvider()
         {
             const string providerName = "Microsoft-Windows-Kernel-File";
-            var fileProvider = new Provider(providerName);
-
-            IEventRecordDelegate callback = (IEventRecord r) =>
-            {
-                try
-                {
-                    var obj = _propertyExtractor.Extract(r);
-                    lock (_lock) { _records.Add(obj.ToPSObject()); }
-                }
-                catch
-                {
-                    // TODO: log bad record parse
-                }
-            };
+            var fileProvider = new Provider(providerName);;
 
             var pidFilter = Filter.ProcessIdIs((int)_processId);
             var eventIdFilter = Filter.EventIdIs(12).Or(Filter.EventIdIs(30));
 
             var filter = new EventFilter(pidFilter.And(eventIdFilter));
-            filter.OnEvent += callback;
+            filter.OnEvent += DefaultEventHandler;
             fileProvider.AddFilter(filter);
 
             return new PSEtwUserProvider(fileProvider, providerName);

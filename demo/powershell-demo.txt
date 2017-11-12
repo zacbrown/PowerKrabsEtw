@@ -1,8 +1,8 @@
 Import-Module .\PowerKrabsEtw
-$trace = New-EtwUserTrace
-$provider = New-EtwUserProvider -ProviderName "Microsoft-Windows-PowerShell"
-$filter = New-EtwCallbackFilter -EventId 7937
-Set-EtwCallbackFilter -UserProvider $provider -Filter $filter
-Set-EtwUserProvider -Trace $trace -Provider $provider
+$trace = New-KrabsEtwUserTrace
+$provider = New-KrabsEtwUserProvider -ProviderName "Microsoft-Windows-PowerShell"
+$filter = New-KrabsEtwCallbackFilter -EventId 7937
+Set-KrabsEtwCallbackFilter -UserProvider $provider -Filter $filter
+Set-KrabsEtwUserProvider -Trace $trace -Provider $provider
 cls
-Start-EtwUserTrace -Trace $trace | Where-Object { $_.CommandName -like "invoke-mimikatz" }
+Start-KrabsEtwUserTrace -Trace $trace -Verbose -TraceTimeLimit ([TimeSpan]::FromSeconds(10)) | Where-Object { $_.CommandName -like "invoke-mimikatz" }

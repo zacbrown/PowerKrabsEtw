@@ -1,5 +1,5 @@
-Import-Module .\PowerKrabsEtw.dll
-$summary = Trace-ProcessWithEtw -ProcessName C:\dev\BadTater\BadTater\bin\Debug\BadTater.exe -ProcessArguments "" -OutputFile BadTaterTrace.json
+Import-Module .\PowerKrabsEtw
+$summary = Trace-KrabsEtwProcess -ProcessName C:\dev\BadTater\BadTater\bin\Debug\BadTater.exe
 cls
 # Here's a little summary of the trace.
 $summary | fl

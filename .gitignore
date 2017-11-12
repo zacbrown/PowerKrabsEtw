@@ -290,3 +290,4 @@ __pycache__/
 # demo exes/dlls
 demo/*.dll
 demo/*.exe
+demo/*.psd1

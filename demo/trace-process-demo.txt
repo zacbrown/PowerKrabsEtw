@@ -1,0 +1,18 @@
+Import-Module .\PowerKrabsEtw.dll
+$summary = Trace-ProcessWithEtw -ProcessName C:\dev\BadTater\BadTater\bin\Debug\BadTater.exe -ProcessArguments "" -OutputFile BadTaterTrace.json
+cls
+# Here's a little summary of the trace.
+$summary | fl
+$summary.NetworkEndPoints
+cls
+# What about JSON output?
+$json = Get-Content $summary.OutputFile | ConvertFrom-Json
+$json | select -ExpandProperty EtwHeader | select -Unique ProviderName
+cls
+# PowerShell data
+$powershell = $json | ? { $_.EtwHeader.ProviderName -match "PowerShell" } | select CommandName,CommandType,UserName,HostProcess
+$powershell | ft
+cls
+# WMI data
+$wmi = $json | ? { $_.EtwHeader.ProviderName -match "WMI" }
+$wmi

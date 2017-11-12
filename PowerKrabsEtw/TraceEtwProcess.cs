@@ -19,8 +19,8 @@ using System.Threading.Tasks;
 
 namespace PowerKrabsEtw
 {
-    [Cmdlet(VerbsDiagnostic.Trace, "ProcessWithEtw")]
-    public class TraceProcessWithEtw : PSCmdlet
+    [Cmdlet(VerbsDiagnostic.Trace, "EtwProcess")]
+    public class TraceEtwProcess : PSCmdlet
     {
         [Parameter(Mandatory = true, Position = 0)]
         [ValidateNotNullOrEmpty]
@@ -46,7 +46,7 @@ namespace PowerKrabsEtw
         string _fullProcessPath = string.Empty;
         uint _processId = 0;
 
-        public TraceProcessWithEtw()
+        public TraceEtwProcess()
         {
             _serialiazerSettings = new JsonSerializerSettings
             {
@@ -60,6 +60,11 @@ namespace PowerKrabsEtw
 
         protected override void BeginProcessing()
         {
+            if (!Path.IsPathRooted(OutputFile))
+            {
+                OutputFile = Path.Combine(SessionState.Path.CurrentFileSystemLocation.Path, OutputFile);
+            }
+
             using (var writer = new StreamWriter(OutputFile))
             {
                 PSEtwUserTrace trace = null;
@@ -81,7 +86,7 @@ namespace PowerKrabsEtw
                     Console.WriteLine($"ETW trace setup, resuming {ProcessName} (PID {_processId})...");
                     ProcessHelper.ResumeProcess(_processHandle);
 
-                    while (!trace.HasPumpedEvents && !Stopping)
+                    while (_eventCounts == 0 && !Stopping)
                     {
                         Console.WriteLine("Waiting for trace to start...");
                         Thread.Sleep(1000);
@@ -95,14 +100,21 @@ namespace PowerKrabsEtw
                             Console.WriteLine($"Processed {_eventCounts} events in last {sleepTimeSpan.Seconds} seconds...");
                             _eventCounts = 0;
                         }
-                        
+
                         Thread.Sleep(sleepTimeSpan);
                     }
+                }
+                catch (Exception ex)
+                {
+                    var error = new ErrorRecord(ex, ex.GetType().ToString(), ErrorCategory.InvalidOperation, null);
+                    WriteError(error);
+                    Console.WriteLine(ex.StackTrace);
                 }
                 finally
                 {
                     Console.WriteLine($"{ProcessName} exited. Stopping trace.");
-                    trace.Stop();
+                    if (trace.IsRunning) trace.Stop();
+                    Console.WriteLine($"OutputFile full path is {OutputFile}");
                 }
             }
 
@@ -116,10 +128,12 @@ namespace PowerKrabsEtw
             }
         }
 
+        #region Summary Helpers
         private PSObject BuildSummaryFromOutputFile(string filename)
         {
             var ret = new PSObject();
             var dict = new Dictionary<string, List<JObject>>();
+            ret.Properties.Add(new PSNoteProperty(nameof(OutputFile), OutputFile));
 
             using (var reader = new StreamReader(filename))
             {
@@ -207,6 +221,8 @@ namespace PowerKrabsEtw
             output.Properties.Add(new PSNoteProperty("PowerShellCommands", commands.ToArray()));
         }
 
+        #endregion
+
         #region Provider Helpers
         private PSEtwUserTrace SetupEtwTrace(StreamWriter writer)
         {
@@ -251,10 +267,12 @@ namespace PowerKrabsEtw
                         var obj = JsonConvert.SerializeObject(_propertyExtractor.Extract(r), _serialiazerSettings);
                         writer.WriteLine(obj);
 
+                        const int secondsToWait = 10;
+                        Console.WriteLine($"Process exited, waiting {secondsToWait} seconds for ETW events to finish pumping...");
                         // We wait ten seconds to give ourselves a chance to process
                         // any remaining items relevant to the process.
                         Task.Run(() => {
-                            Thread.Sleep(TimeSpan.FromSeconds(20));
+                            Thread.Sleep(TimeSpan.FromSeconds(secondsToWait));
                             _cts.Cancel();
                         });
                     }
@@ -458,11 +476,10 @@ namespace PowerKrabsEtw
             const int CachedLookupEventId = 3018;
             const int LiveLookupEventId = 3020;
 
-            var processIdFilter = Filter.ProcessIdIs((int)_processId);
             var eventIdFilter = Filter.EventIdIs(NXDomainEventId)
                     .Or(Filter.EventIdIs(CachedLookupEventId)
                     .Or(Filter.EventIdIs(LiveLookupEventId)));
-            var filter = new EventFilter(processIdFilter.And(eventIdFilter));
+            var filter = new EventFilter(eventIdFilter);
 
             filter.OnEvent += (IEventRecord r) =>
             {

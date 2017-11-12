@@ -5,8 +5,8 @@ using System.Net;
 
 namespace PowerKrabsEtw
 {
-    [Cmdlet(VerbsCommon.Get, "DnsCacheEntries")]
-    public class GetDnsCacheEntries : PSCmdlet
+    [Cmdlet(VerbsCommon.Get, "EtwDnsCacheEntries")]
+    public class GetEtwDnsCacheEntries : PSCmdlet
     {
         [Parameter(ParameterSetName = "ByIP")]
         public string IpAddress { get; set; }

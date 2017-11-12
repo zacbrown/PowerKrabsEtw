@@ -7,8 +7,8 @@ using System.Management.Automation;
 
 namespace PowerKrabsEtw
 {
-    [Cmdlet(VerbsLifecycle.Start, "ProcessSuspended")]
-    public class StartProcessSuspended : PSCmdlet
+    [Cmdlet(VerbsLifecycle.Start, "EtwProcessSuspended")]
+    public class StartEtwProcessSuspended : PSCmdlet
     {
         [Parameter(Position = 0)]
         [ValidateNotNullOrEmpty]

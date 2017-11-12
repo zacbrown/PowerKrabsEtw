@@ -6,8 +6,8 @@ using System.Management.Automation;
 
 namespace PowerKrabsEtw
 {
-    [Cmdlet(VerbsLifecycle.Resume, "SuspendedProcess")]
-    public class ResumeSuspendedProcess : PSCmdlet
+    [Cmdlet(VerbsLifecycle.Resume, "EtwSuspendedProcess")]
+    public class ResumeEtwSuspendedProcess : PSCmdlet
     {
         [Parameter(Mandatory = true, Position = 0)]
         [ValidateNotNull]

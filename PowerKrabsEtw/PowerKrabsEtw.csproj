@@ -37,7 +37,7 @@
     <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.10.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
-    <Reference Include="O365.Security.Native.ETW, Version=1.0.6517.15099, Culture=neutral, PublicKeyToken=bc3a2e4ba4c5fbd5, processorArchitecture=AMD64">
+    <Reference Include="O365.Security.Native.ETW, Version=1.0.6519.32358, Culture=neutral, PublicKeyToken=80dc624ca478cf0a, processorArchitecture=AMD64">
       <HintPath>..\packages\O365.Security.Native.ETW.1.0.10\lib\net45\O365.Security.Native.ETW.dll</HintPath>
     </Reference>
     <Reference Include="System" />
@@ -51,7 +51,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="GetDnsCacheEntries.cs" />
+    <Compile Include="GetEtwDnsCacheEntries.cs" />
     <Compile Include="Internal\Details\DictionaryExtensions.cs" />
     <Compile Include="Internal\Details\DnsCacheHelper.cs" />
     <Compile Include="Internal\Details\JsonIPAddressConverter.cs" />
@@ -69,7 +69,7 @@
     <Compile Include="Internal\PSEtwFilter.cs" />
     <Compile Include="Internal\PSEtwUserProvider.cs" />
     <Compile Include="Internal\PSProcessObject.cs" />
-    <Compile Include="ResumeSuspendedProcess.cs" />
+    <Compile Include="ResumeEtwSuspendedProcess.cs" />
     <Compile Include="SetEtwCallbackFilter.cs" />
     <Compile Include="Internal\Details\DisposableExtensions.cs" />
     <Compile Include="Internal\Details\Exceptions.cs" />
@@ -82,8 +82,8 @@
     <Compile Include="Internal\PropertyParser\PropertyExtractor.cs" />
     <Compile Include="SetEtwUserProvider.cs" />
     <Compile Include="StartEtwUserTrace.cs" />
-    <Compile Include="StartProcessSuspended.cs" />
-    <Compile Include="TraceProcessWithEtw.cs" />
+    <Compile Include="StartEtwProcessSuspended.cs" />
+    <Compile Include="TraceEtwProcess.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

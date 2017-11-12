@@ -34,10 +34,7 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.10.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
-    </Reference>
-    <Reference Include="O365.Security.Native.ETW, Version=1.0.6519.32358, Culture=neutral, PublicKeyToken=80dc624ca478cf0a, processorArchitecture=AMD64">
+    <Reference Include="O365.Security.Native.ETW, Version=1.0.6524.39748, Culture=neutral, PublicKeyToken=80dc624ca478cf0a, processorArchitecture=AMD64">
       <HintPath>..\packages\O365.Security.Native.ETW.1.0.10\lib\net45\O365.Security.Native.ETW.dll</HintPath>
     </Reference>
     <Reference Include="System" />
@@ -54,7 +51,6 @@
     <Compile Include="GetEtwDnsCacheEntries.cs" />
     <Compile Include="Internal\Details\DictionaryExtensions.cs" />
     <Compile Include="Internal\Details\DnsCacheHelper.cs" />
-    <Compile Include="Internal\Details\JsonIPAddressConverter.cs" />
     <Compile Include="Internal\Details\ParsedDnsRecord.cs" />
     <Compile Include="Internal\Details\ReverseDnsCache.cs" />
     <Compile Include="Internal\Details\Win32Interop.cs" />
@@ -86,11 +82,17 @@
     <Compile Include="TraceEtwProcess.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="PowerKrabsEtw.psd1">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>copy $(TargetDir)\*.dll $(SolutionDir)\demo</PostBuildEvent>
+    <PostBuildEvent>copy $(TargetDir)\*.dll $(SolutionDir)\demo;
+copy $(ProjectDir)\*.psd1 $(SolutionDir)\demo</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

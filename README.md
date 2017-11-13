@@ -8,7 +8,18 @@ This module is currently in an experimental state. This is the first PowerShell 
 
 # Examples
 There are two main supported scenarios right now:
-* Trace process lifetime using `Trace-KrabsEtwProcess` - think of this as similar to ProcMon filtered on a specific process.
+* **`Trace-KrabsEtwProcess`** - think of this as similar to ProcMon filtered on a specific process.
+    * This is not yet configurable. The data provided includes the following data sources:
+        * IPv4/IPv6 TCP send
+        * IPv4/IPv6 UDP send
+        * DNS lookups
+        * remote thread injections
+        * child process creation (via CreateProcess or similar direct means)
+        * WMI activity
+        * registry activity
+        * file activity
+        * PowerShell function execution
+        * DLL load activity
 * Create explicit providers, filters, and traces - this is a more flexible approach and best for experimentation.
 
 **Start powershell.exe with the `-MTA` flag. The module will fail to work otherwise.**:

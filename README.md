@@ -1,10 +1,11 @@
 # PowerKrabsEtw
 PowerKrabsEtw is a PowerShell module built around the [krabsetw](https://github.com/Microsoft/krabsetw) APIs. It exposes a subset of functionality directly available in krabsetw and is meant to streamline ETW experimentation.
 
-## Notes
 This module is currently in an experimental state. This is the first PowerShell API I've written and while I've had great feedback working with [@Lee_Holmes](https://twitter.com/lee_holmes), I know it still needs work.
 
-**Please feel free to file issues if you have suggestions for improving the API.**
+# Getting Help
+* Please feel free to file issues if you have suggestions for improving the API.
+* Join the [EtwNerds Slack](https://join.slack.com/t/etwnerds/shared_invite/enQtMjcyMzI0OTk4MDE4LThhMWUyMTEwZmJkOGQ0NGIzNDkyMmFkZGFhMjEzY2E2NzRlNWMyMGM0NWE1MzFlYmQ0Y2U4NWVlNWVmZWVjYzE) to chat about ETW and/or PowerKrabsEtw
 
 # Examples
 There are two main supported scenarios right now:
@@ -97,6 +98,8 @@ Payload         : Command invoke-mimikatz is Stopped.
 
 # Future Plans
 * Add ability to specify a directory of YARA and/or SIGMA rules for filtering.
+* Enable kernel provider tracing
+* Enable ability to query about trace sessions and fetch event schemas
 
 # Known Issues
 * If you create many new traces, either by using `Trace-KrabsEtwProcess` or `Start-KrabsEtwProcess`, it is possible to exhaust the available ETW sessions in Windows. The easiest solution is to restart the machine.

@@ -23,14 +23,14 @@ There are two main supported scenarios right now:
         * DLL load activity
 * Create explicit providers, filters, and traces - this is a more flexible approach and best for experimentation.
 
-**Start powershell.exe with the `-MTA` flag. The module will fail to work otherwise.**:
+**Start powershell.exe with the `-MTA` flag. The module will fail to work otherwise. This is a workaround for now.**:
 
     powershell.exe -mta
 
 1. Trace a process's lifetime.
 ```
 PS C:\dev\PowerKrabsEtw\PowerKrabsEtw\bin\x64\Debug> import-module .\PowerKrabsEtw
-PS C:\dev\PowerKrabsEtw\PowerKrabsEtw\bin\x64\Debug> $events = Trace-ProcessWithEtw -ProcessName powershell.exe
+PS C:\dev\PowerKrabsEtw\PowerKrabsEtw\bin\x64\Debug> $events = Trace-KrabsEtwProcess -ProcessName powershell.exe
 PS C:\dev\PowerKrabsEtw\PowerKrabsEtw\bin\x64\Debug> $events | select -Unique EtwProviderName
 
 EtwProviderName
@@ -61,13 +61,13 @@ CapturedData     :
 2. Setup a custom trace session for PowerShell events
 ```
 PS C:\dev\PowerKrabsEtw\demo> Import-Module .\PowerKrabsEtw
->> $trace = New-EtwUserTrace
->> $provider = New-EtwUserProvider -ProviderName "Microsoft-Windows-PowerShell"
->> $filter = New-EtwCallbackFilter -EventId 7937
->> Set-EtwCallbackFilter -UserProvider $provider -Filter $filter
->> Set-EtwUserProvider -Trace $trace -Provider $provider
+>> $trace = New-KrabsEtwUserTrace
+>> $provider = New-KrabsEtwUserProvider -ProviderName "Microsoft-Windows-PowerShell"
+>> $filter = New-KrabsEtwCallbackFilter -EventId 7937
+>> Set-KrabsEtwCallbackFilter -UserProvider $provider -Filter $filter
+>> Set-KrabsEtwUserProvider -Trace $trace -Provider $provider
 >>
->> Start-EtwUserTrace -Trace $trace | Where-Object { $_.CommandName -like "invoke-mimikatz" }
+>> Start-KrabsEtwUserTrace -Trace $trace | Where-Object { $_.CommandName -like "invoke-mimikatz" }
 
 
 EtwEventId      : 7937
